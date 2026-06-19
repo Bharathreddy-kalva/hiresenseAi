@@ -6,6 +6,8 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   ClipboardList,
+  Copy,
+  Download,
   Eraser,
   FileCheck2,
   FileText,
@@ -46,12 +48,24 @@ function App() {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const hasResume = Boolean(resumeFile || resumeText.trim());
-  const canAnalyze = hasResume && Boolean(jobDescription.trim()) && !loading;
+  const hasJobDescription = Boolean(jobDescription.trim());
+  const canAnalyze = hasResume && hasJobDescription && !loading;
   const resumeWordCount = countWords(resumeText);
   const jdWordCount = countWords(jobDescription);
   const engineLabel = analysis?.engine?.startsWith("ai-") ? "OpenAI powered" : "Fallback ready";
+  const activeStep = analysis ? 4 : loading ? 3 : hasResume && hasJobDescription ? 3 : hasResume ? 2 : 1;
+  const flowStatus = loading
+    ? "Analyzing resume signal"
+    : analysis
+      ? "Report ready"
+      : hasResume && hasJobDescription
+        ? "Ready to analyze"
+        : hasResume
+          ? "Add job description"
+          : "Add resume";
 
   const scoreColor = useMemo(() => {
     const score = analysis?.matchScore || 0;
@@ -94,6 +108,7 @@ function App() {
       }
 
       setAnalysis(await response.json());
+      setCopied(false);
     } catch (err) {
       setError(err.message || "Something went wrong");
     } finally {
@@ -108,6 +123,7 @@ function App() {
     setResumeFile(null);
     setAnalysis(null);
     setError("");
+    setCopied(false);
   }
 
   function resetForm() {
@@ -117,6 +133,52 @@ function App() {
     setResumeFile(null);
     setAnalysis(null);
     setError("");
+    setCopied(false);
+  }
+
+  function buildReportText() {
+    if (!analysis) return "";
+
+    const sections = [
+      `HireSense AI report${roleTitle ? ` for ${roleTitle}` : ""}`,
+      `Match score: ${analysis.matchScore}%`,
+      `ATS score: ${analysis.atsScore}%`,
+      `Verdict: ${analysis.verdict}`,
+      formatReportSection("Matched skills", analysis.matchedSkills),
+      formatReportSection("Missing skills", analysis.missingSkills),
+      formatReportSection("Resume improvements", analysis.improvements),
+      formatReportSection("Interview questions", analysis.interviewQuestions),
+    ];
+
+    return sections.filter(Boolean).join("\n\n");
+  }
+
+  async function copyReport() {
+    const report = buildReportText();
+    if (!report) return;
+
+    try {
+      await navigator.clipboard.writeText(report);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setError("Could not copy the report in this browser.");
+    }
+  }
+
+  function downloadReport() {
+    const report = buildReportText();
+    if (!report) return;
+
+    const blob = new Blob([report], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${slugify(roleTitle || "resume-analysis")}-report.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -183,6 +245,8 @@ function App() {
           </div>
         </div>
       </section>
+
+      <FlowProgress activeStep={activeStep} status={flowStatus} />
 
       <section className="workspace" id="analyzer">
         <form className="input-panel" onSubmit={analyzeResume}>
@@ -275,7 +339,12 @@ function App() {
 
         <section className="results-panel">
           {!analysis ? (
-            <EmptyState />
+            <EmptyState
+              activeStep={activeStep}
+              hasResume={hasResume}
+              hasJobDescription={hasJobDescription}
+              loading={loading}
+            />
           ) : (
             <>
               <div className="result-header">
@@ -286,6 +355,17 @@ function App() {
                 <span className="engine-pill">
                   <BadgeCheck size={16} /> {engineLabel}
                 </span>
+              </div>
+
+              <div className="report-actions">
+                <button type="button" className="secondary-button" onClick={copyReport}>
+                  <Copy size={16} />
+                  {copied ? "Copied" : "Copy report"}
+                </button>
+                <button type="button" className="ghost-button" onClick={downloadReport}>
+                  <Download size={16} />
+                  Download
+                </button>
               </div>
 
               <div className="score-row">
@@ -343,7 +423,51 @@ function App() {
   );
 }
 
-function EmptyState() {
+function FlowProgress({ activeStep, status }) {
+  const steps = [
+    { id: 1, title: "Resume", copy: "Upload or paste candidate details" },
+    { id: 2, title: "Role", copy: "Add the job description" },
+    { id: 3, title: "Analyze", copy: "Run the match engine" },
+    { id: 4, title: "Report", copy: "Review and export next steps" },
+  ];
+
+  return (
+    <section className="flow-strip" aria-label="Resume analysis flow">
+      <div className="flow-status">
+        <span>Current step</span>
+        <strong>{status}</strong>
+      </div>
+      <div className="flow-steps">
+        {steps.map((step) => (
+          <div
+            className={`flow-step ${activeStep >= step.id ? "active" : ""} ${
+              activeStep === step.id ? "current" : ""
+            }`}
+            key={step.id}
+          >
+            <span>{step.id}</span>
+            <div>
+              <strong>{step.title}</strong>
+              <small>{step.copy}</small>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function EmptyState({ activeStep, hasResume, hasJobDescription, loading }) {
+  const nextAction = loading
+    ? "Reading the resume, matching skills, and preparing the report."
+    : activeStep === 3
+      ? "Everything is ready. Run the analyzer to generate the report."
+      : hasResume && !hasJobDescription
+        ? "Paste the job description to unlock the match score."
+        : !hasResume && hasJobDescription
+          ? "Add the resume so the analyzer has a candidate profile."
+          : "Start by uploading a resume or pasting resume text.";
+
   return (
     <div className="empty-state">
       <div className="empty-visual">
@@ -356,6 +480,10 @@ function EmptyState() {
         dashboard will show match score, ATS feedback, skill gaps, rewrites, and
         interview prep.
       </p>
+      <div className="next-action">
+        <strong>Next</strong>
+        <span>{nextAction}</span>
+      </div>
     </div>
   );
 }
@@ -409,6 +537,19 @@ function InsightList({ icon, title, items = [], type = "default" }) {
 
 function countWords(text) {
   return text.trim() ? text.trim().split(/\s+/).length : 0;
+}
+
+function formatReportSection(title, items = []) {
+  if (!items.length) return "";
+  return `${title}:\n${items.map((item) => `- ${item}`).join("\n")}`;
+}
+
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
 export default App;

@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DealScout Agent</title>
+    <link rel="stylesheet" href="./styles.css?v=layout-60-40-centered" />
+  </head>
+  <body>
+    <div class="ambient-scout" aria-hidden="true">
+      <div class="market-field"></div>
+      <div class="signal-sweep"></div>
+      <div class="signal-stream stream-a"></div>
+      <div class="signal-stream stream-b"></div>
+      <div class="signal-stream stream-c"></div>
+      <span class="price-signal signal-one">$416</span>
+      <span class="price-signal signal-two">-18%</span>
+      <span class="price-signal signal-three">Risk 12</span>
+      <span class="price-signal signal-four">$638</span>
+      <span class="source-signal source-one">Amazon verified</span>
+      <span class="source-signal source-two">Swappa best</span>
+      <span class="source-signal source-three">Marketplace risky</span>
+      <span class="source-signal source-four">Target matched</span>
+    </div>
+    <header class="deal-nav">
+      <div class="nav-brand">
+        <div class="brand-mark" aria-hidden="true">D</div>
+        <div>
+          <strong>DealScout</strong>
+          <span>Buyer-side deal agent</span>
+        </div>
+      </div>
+      <nav aria-label="Dashboard sections">
+        <a href="#search">Search</a>
+        <a href="#scout">Scout</a>
+        <a href="#report">Report</a>
+        <a href="#deals">Deals</a>
+      </nav>
+      <button class="nav-menu" type="button" aria-label="Menu">
+        <span></span>
+        <span></span>
+      </button>
+    </header>
+    <main class="app-shell">
+      <section id="search" class="control-panel" aria-label="Search controls">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Mission setup</p>
+            <h1>Find the best deal across every source.</h1>
+          </div>
+        </div>
+
+        <div class="hero-showcase" aria-hidden="true">
+          <div class="hero-card hero-card-main">
+            <div id="hero-product-image" class="hero-product-image"></div>
+          </div>
+          <div class="hero-card hero-card-top">
+            <div id="hero-secondary-image" class="hero-product-image"></div>
+          </div>
+          <div class="hero-card hero-card-bottom">
+            <div id="hero-tertiary-image" class="hero-product-image"></div>
+          </div>
+        </div>
+
+        <form id="scout-form" class="scout-form">
+          <label class="product-field">
+            Product
+            <input id="product" name="product" type="text" placeholder="Search any product" autocomplete="off" required />
+          </label>
+
+          <div class="field-grid">
+            <label>
+              Max budget
+              <input id="budget" name="budget" type="number" placeholder="650" min="1" required />
+            </label>
+            <label>
+              ZIP code
+              <input id="zip" name="zip" type="text" placeholder="ZIP" inputmode="numeric" maxlength="10" />
+            </label>
+          </div>
+
+          <fieldset>
+            <legend>Priority</legend>
+            <div class="segmented">
+              <label><input type="radio" name="priority" value="value" checked /> Value</label>
+              <label><input type="radio" name="priority" value="safety" /> Safety</label>
+              <label><input type="radio" name="priority" value="speed" /> Speed</label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Condition</legend>
+            <div class="check-list">
+              <label><input type="checkbox" name="condition" value="new" checked /> New</label>
+              <label><input type="checkbox" name="condition" value="open-box" checked /> Open box</label>
+              <label><input type="checkbox" name="condition" value="used" checked /> Used</label>
+              <label><input type="checkbox" name="condition" value="refurbished" checked /> Refurbished</label>
+            </div>
+          </fieldset>
+
+          <button class="primary-action" type="submit">
+            <span aria-hidden="true">⌕</span>
+            Scout deals
+          </button>
+        </form>
+
+        <section class="source-panel" aria-label="Sources">
+          <div class="section-title">
+            <h2>Sources</h2>
+            <span id="source-count"></span>
+          </div>
+          <div id="source-list" class="source-list"></div>
+        </section>
+      </section>
+
+      <section class="results-panel" aria-live="polite">
+        <section id="scout" class="scout-stage" aria-label="Animated deal scouting map">
+          <div class="stage-copy">
+            <p class="eyebrow">Autonomous scouting run</p>
+            <h2>Live source sync, price signals, and seller risk in one view.</h2>
+            <div class="stage-stats">
+              <span><strong id="stage-sources">16</strong> sources</span>
+              <span><strong id="stage-deals">0</strong> deals</span>
+              <span><strong id="stage-risk">0</strong> risk floor</span>
+            </div>
+          </div>
+
+          <div class="flight-map" aria-hidden="true">
+            <div class="product-orbit">
+              <div id="orbit-product" class="orbit-product">Ready</div>
+              <div id="orbit-sources" class="orbit-sources"></div>
+            </div>
+            <div class="radar-ring ring-one"></div>
+            <div class="radar-ring ring-two"></div>
+            <div class="radar-ring ring-three"></div>
+            <div class="scan-beam"></div>
+            <div class="route-line route-one"></div>
+            <div class="route-line route-two"></div>
+            <div class="route-line route-three"></div>
+            <div id="stage-nodes" class="stage-nodes"></div>
+          </div>
+        </section>
+
+        <div id="report" class="top-bar">
+          <div>
+            <p class="eyebrow">Scout report</p>
+            <h2 id="report-title">Start a scout search</h2>
+          </div>
+          <div class="summary-strip">
+            <div>
+              <span id="best-price">$0</span>
+              <small>best price</small>
+            </div>
+            <div>
+              <span id="safe-pick">0</span>
+              <small>safest score</small>
+            </div>
+            <div>
+              <span id="sources-scanned">0</span>
+              <small>sources</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight-grid">
+          <article class="insight-card">
+            <h3>Recommendation</h3>
+            <p id="recommendation"></p>
+          </article>
+          <article class="insight-card">
+            <h3>Watchouts</h3>
+            <ul id="watchouts"></ul>
+          </article>
+          <article class="insight-card">
+            <h3>Negotiation Plan</h3>
+            <p id="negotiation-plan"></p>
+          </article>
+        </div>
+
+        <section class="timeline-panel" aria-label="Deal narrowing timeline">
+          <div class="section-title">
+            <h2>Deal Timeline</h2>
+            <span id="timeline-summary">Top 3 path</span>
+          </div>
+          <div id="deal-timeline" class="deal-timeline"></div>
+        </section>
+
+        <div class="toolbar">
+          <div class="tabs" role="tablist" aria-label="Deal filters">
+            <button class="tab-button active" type="button" data-filter="all">All</button>
+            <button class="tab-button" type="button" data-filter="retail">Retail</button>
+            <button class="tab-button" type="button" data-filter="used">Used</button>
+            <button class="tab-button" type="button" data-filter="deal">Deal feeds</button>
+          </div>
+          <label class="sort-control">
+            Sort
+            <select id="sort">
+              <option value="score">Best score</option>
+              <option value="price">Lowest price</option>
+              <option value="risk">Lowest risk</option>
+            </select>
+          </label>
+        </div>
+
+        <div id="deals" class="deals-anchor">
+          <div id="deal-list" class="deal-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <template id="deal-card-template">
+      <article class="deal-card">
+        <div class="deal-rank"></div>
+        <div class="deal-main">
+          <div class="deal-heading">
+            <div>
+              <h3></h3>
+              <p class="source-meta"></p>
+            </div>
+            <div class="price-box">
+              <strong></strong>
+              <small></small>
+            </div>
+          </div>
+
+          <div class="score-row">
+            <span class="score-pill"></span>
+            <span class="risk-pill"></span>
+            <span class="condition-pill"></span>
+            <span class="distance-pill"></span>
+          </div>
+
+          <p class="reason"></p>
+
+          <div class="message-box">
+            <div>
+              <h4>Seller message</h4>
+              <p class="message-copy"></p>
+            </div>
+            <button type="button" class="copy-button">Copy</button>
+          </div>
+
+          <div class="card-actions">
+            <a class="search-link" target="_blank" rel="noreferrer">Open deal</a>
+            <button type="button" class="negotiate-button">Negotiate</button>
+            <button type="button" class="details-button">Risk details</button>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <aside id="negotiation-drawer" class="negotiation-drawer" aria-label="Negotiation mode" aria-hidden="true">
+      <div class="drawer-header">
+        <div>
+          <p class="eyebrow">Negotiation mode</p>
+          <h2 id="drawer-title">Seller console</h2>
+        </div>
+        <button id="drawer-close" type="button" aria-label="Close negotiation mode">×</button>
+      </div>
+      <div class="drawer-grid">
+        <div>
+          <span>Suggested opener</span>
+          <p id="drawer-message"></p>
+        </div>
+        <div>
+          <span>Offer strategy</span>
+          <p id="drawer-offer"></p>
+        </div>
+        <div>
+          <span>Verification checklist</span>
+          <ul id="drawer-checks"></ul>
+        </div>
+      </div>
+      <button id="drawer-copy" class="primary-action" type="button">Copy negotiation script</button>
+    </aside>
+
+    <script src="./app.js?v=research-only-exact-listings"></script>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(vercel whoami *)",
+      "Bash(vercel --yes --name hiresense-ai)",
+      "WebFetch(domain:hiresense-ai-bay.vercel.app)",
+      "Bash(rm -rf \"/Users/kalvabharathreddy/Documents/resume matcher/.vercel\")",
+      "Bash(vercel link *)",
+      "Bash(VERCEL_DETECT_SERVICES=0 vercel deploy --prod --yes)",
+      "Bash(vercel env *)",
+      "Bash(python3 -c \"import sys,json; print\\(json.load\\(sys.stdin\\)['token']\\)\")",
+      "Read(//Users/kalvabharathreddy/.config/com.vercel.cli/**)",
+      "Bash(python3 -m json.tool)",
+      "Read(//Users/kalvabharathreddy/**)",
+      "Bash(python3 -c \"import json; print\\(json.load\\(open\\('/Users/kalvabharathreddy/Library/Application Support/com.vercel.cli/auth.json'\\)\\)['token']\\)\")",
+      "Bash(curl -s -X PATCH https://api.vercel.com/v9/projects/prj_glirHc4eskDpFw251MYZAU6eMPEN -H 'Authorization: Bearer __CMDSUB_OUTPUT__' -H 'Content-Type: application/json' -d '{\"framework\":\"vite\"}')",
+      "Bash(vercel deploy *)",
+      "WebFetch(domain:hiresense-ai-omega.vercel.app)",
+      "Bash(vercel ls *)",
+      "Bash(vercel inspect *)"
+    ]
+  }
+}
